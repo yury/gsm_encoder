@@ -60,7 +60,6 @@ module GSMEncoder
   def can_encode? str
     return true if !str
 
-    len = str.size
     str.chars.each do |c|
       # a very easy check a-z, A-Z, and 0-9 are always valid
       if c >= ?A && c <= ?Z || c >= ?a && c <= ?z || c >= ?0 && c <= ?9
