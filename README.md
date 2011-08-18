@@ -9,7 +9,7 @@ This is port of Twitter's Java [implementation](https://github.com/twitter/cloud
 __NOTE: ruby >= 1.9.2 is required__
 
     gem install gsm_encoder
- 
+
 ## Usage
 
     require 'gsm_encoder'
@@ -21,7 +21,7 @@ __NOTE: ruby >= 1.9.2 is required__
     GSMEncoder.decode(GSMEncoder.encode('hi')) # => 'hi'
    
     # can encode?
-    GSMEncoder.can_represent?('`') # => false
+    GSMEncoder.can_encode?('`') # => false
     
     # replaces unsupported chars with '?'
-    GSMEncoder.encode('`') # => '?'   
+    GSMEncoder.encode('`') # => '?'
