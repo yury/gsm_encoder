@@ -6,6 +6,8 @@ This is port of Twitter's Java [implementation](https://github.com/twitter/cloud
 
 ## Installation
 
+__NOTE: ruby >= 1.9.2 is required__
+
     gem install gsm_encoder
  
 ## Usage
