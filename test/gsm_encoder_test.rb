@@ -29,10 +29,10 @@ class GSMEncoderTest < Test::Unit::TestCase
   def test_encoding
     alphabet = ('a'..'z').to_a.join
     numbers = '01234567890'
-    
+
     cases = [nil, "", " ", "hello", "@dcab", "^&*", "€ euro", alphabet, alphabet.upcase, numbers,
             "@->--", "<3", ":)", ">.<", "%", "o_O"]
-    
+
     cases.each do |c|
       assert_equal c, decode(encode(c)), "Failed to decode encoded '#{c}'"
     end
