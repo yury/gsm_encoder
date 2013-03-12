@@ -15,7 +15,26 @@ class GSMEncoderTest < Test::Unit::TestCase
   def test_replacements_for_unsupported_chars
     assert_equal '??????', encode('привет')
     assert_equal '?', encode('`')
+
+    # unsupported Spanish characters
     assert_equal '?', encode('ï')
+
+    # unsupported French characters
+    assert_equal '?',  encode('À')
+    assert_equal '??', encode('Ââ')
+    assert_equal '?',  encode('È')
+    assert_equal '??', encode('Êê')
+    assert_equal '??', encode('Ëë')
+    assert_equal '??', encode('Îî')
+    assert_equal '??', encode('Ïï')
+    assert_equal '??', encode('Ôô')
+    assert_equal '??', encode('Œœ')
+    assert_equal '?',  encode('Ù')
+    assert_equal '??', encode('Ûû')
+    assert_equal '??', encode('Ÿÿ')
+
+    # unsupported Czech characters
+    assert_equal '????????????????????', encode('ČčĎďĚěŇňŘřŠšŤťŮůÝýŽž')
   end
 
   def test_can_encode?
@@ -23,16 +42,35 @@ class GSMEncoderTest < Test::Unit::TestCase
     assert can_encode?('')
     assert can_encode?("?")
     assert can_encode?("1234567890qwertyuiop[]asdfghjkl;'zxcvbnm,./?{}() \"+-_!@#$\%^&*|\\")
+
+    # test encoding for Spanish characters
+    # diaeresis over i (vïuda) is not supported and appears to be for poetic use only
+    assert can_encode?("á é í ó ú pingüino ¡Ó señor! ¿A dónde vas?")
+    assert can_encode?("Á É Í Ó Ú PINGÜINO")
+
+    # test encoding for certain French characters
+    assert can_encode?("à Ææ Çç Éé è ù Üü")
+
+    # test encoding for certain Czech characters
+    assert can_encode?("Á á É é Í í Ó ó Ú ú")
+  end
+
+  def test_can_encode_false
     assert !can_encode?("`")
     assert !can_encode?("вот так вот")
 
-    # test encoding for spanish, french, czech characters
-    # diaeresis over i (vïuda) is not supported and appears to be for poetic use only
-    assert can_encode?("á é í ó ú pingüino ¡Ó señor! ¿A dónde vas?")
+    # non-allowed Spanish characters
+    assert !can_encode?("ï")
 
-    assert can_encode?("Àà Ââ Ææ Çç Éé Èè Êê Ëë Îî Ïï Ôô Œœ Ùù Ûû Üü Ÿÿ")
+    #non-allowed French characters
+    "ÀÂâÈÊêËëÎîÏïÔôŒœÙÛûŸÿ".each_char do |char|
+      assert !can_encode?(char)
+    end
 
-    assert can_encode?("Á á Č č Ď ď É é Ě ě Í í Ň ň Ó ó Ř ř Š š Ť ť Ú ú Ů ů Ý ý Ž ž")
+    # non-allowed Czech characters
+    "ČčĎďĚěŇňŘřŠšŤťŮůÝýŽž".each_char do |char|
+      assert !can_encode?(char)
+    end
   end
 
   def test_encoding
@@ -40,7 +78,8 @@ class GSMEncoderTest < Test::Unit::TestCase
     numbers = '01234567890'
 
     cases = [nil, "", " ", "hello", "@dcab", "^&*", "€ euro", alphabet, alphabet.upcase, numbers,
-            "@->--", "<3", ":)", ">.<", "%", "o_O", "á é í ó ú pingüino ¡Ó señor! ¿A dónde vas?"]
+            "@->--", "<3", ":)", ">.<", "%", "o_O", "á é í ó ú pingüino ¡Ó señor! ¿A dónde vas?",
+            "Á É Í Ó Ú PINGÜINO", "à Ææ Çç Éé è ù Üü", "Á á É é Í í Ó ó Ú ú"]
 
     cases.each do |c|
       assert_equal c, decode(encode(c)), "Failed to decode encoded '#{c}'"
