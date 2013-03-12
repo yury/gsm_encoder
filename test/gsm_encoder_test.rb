@@ -53,6 +53,10 @@ class GSMEncoderTest < Test::Unit::TestCase
 
     # test encoding for certain Czech characters
     assert can_encode?("Á á É é Í í Ó ó Ú ú")
+
+    # found this on a random website
+    assert can_encode?("£$¥èéùìòØøÅå_FG????ST?ÆæßÉ")
+    assert can_encode?("!\"#¤%&'()*+,-./0123456789:;<=>?¡ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÑÜ§¿abcdefghijklmnopqrstuvwxyzäöñüà^{}\[~]|€")
   end
 
   def test_can_encode_false
@@ -79,7 +83,8 @@ class GSMEncoderTest < Test::Unit::TestCase
 
     cases = [nil, "", " ", "hello", "@dcab", "^&*", "€ euro", alphabet, alphabet.upcase, numbers,
             "@->--", "<3", ":)", ">.<", "%", "o_O", "á é í ó ú pingüino ¡Ó señor! ¿A dónde vas?",
-            "Á É Í Ó Ú PINGÜINO", "à Ææ Çç Éé è ù Üü", "Á á É é Í í Ó ó Ú ú"]
+            "Á É Í Ó Ú PINGÜINO", "à Ææ Çç Éé è ù Üü", "Á á É é Í í Ó ó Ú ú", "£$¥èéùìòØøÅå_FG????ST?ÆæßÉ",
+            "!\"#¤%&'()*+,-./0123456789:;<=>?¡ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÑÜ§¿abcdefghijklmnopqrstuvwxyzäöñüà^{}\[~]|€"]
 
     cases.each do |c|
       assert_equal c, decode(encode(c)), "Failed to decode encoded '#{c}'"
