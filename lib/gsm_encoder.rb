@@ -37,22 +37,14 @@ module GSMEncoder
   # 'inactive' characters ever be matchable with a valid base-table
   # character as this breaks the encoding loop.
   EXT_CHAR_TABLE = [
-    0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, '^', 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0,
-    '{', '}', 0, 0, 0, 0, 0, BS,
-    0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, '[', '~', ']', 0,
-    '|', 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, '€', 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0,
+    0,   0,   0, 0, 0,   0,   0, 0, 0,   'ç', 0, 0, 0,   0,   0,   0,
+    0,   0,   0, 0, '^', 0,   0, 0, 0,   0,   0, 0, 0,   0,   0,   0,
+    0,   0,   0, 0, 0,   0,   0, 0, '{', '}', 0, 0, 0,   0,   0,   BS,
+    0,   0,   0, 0, 0,   0,   0, 0, 0,   0,   0, 0, '[', '~', ']', 0,
+    '|', 'Á', 0, 0, 0,   0,   0, 0, 0,   'Í', 0, 0, 0,   0,   0,   'Ó',
+    0,   0,   0, 0, 0,   'Ú', 0, 0, 0,   0,   0, 0, 0,   0,   0,   0,
+    0,   'á', 0, 0, 0,   '€', 0, 0, 0,   'í', 0, 0, 0,   0,   0,   'ó',
+    0,   0,   0, 0, 0,   'ú', 0, 0, 0,   0,   0, 0, 0,   0,   0,   0,
   ]
 
   # Verifies that this charset can represent every character in the Ruby
@@ -81,12 +73,12 @@ module GSMEncoder
         # if we searched both charmaps and didn't find it, then its bad
         return false if !found
       end
-    end  
+    end
 
     true
   end
 
-  def encode str 
+  def encode str
     return nil if !str
 
     buffer = ''.encode('binary')
@@ -114,7 +106,7 @@ module GSMEncoder
           buffer << '?'
         end
       end
-    rescue 
+    rescue
       # TODO: ?
     end
     buffer
@@ -122,9 +114,9 @@ module GSMEncoder
 
   def decode bstring
     return nil if !bstring
-    
+
     buffer = ''.encode('utf-8')
-    
+
     table = CHAR_TABLE
     bstring.bytes.each do |c|
       code = c & 0x000000ff
@@ -134,14 +126,14 @@ module GSMEncoder
       else
         buffer << (code >= table.length ? '?' : table[code])
         # go back to the default table
-        table = CHAR_TABLE 
+        table = CHAR_TABLE
       end
     end
     buffer
   end
 
   module_function :can_encode?
-  module_function :encode  
+  module_function :encode
   module_function :decode
 
 end

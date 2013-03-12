@@ -25,3 +25,9 @@ __NOTE: ruby >= 1.9.2 is required__
     
     # replaces unsupported chars with '?'
     GSMEncoder.encode('`') # => '?'
+
+## Updates
+
+### 0.1.1
+
+Added support for Spanish shift
