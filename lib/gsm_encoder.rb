@@ -9,9 +9,9 @@
 module GSMEncoder
 
   EXTENDED_ESCAPE = 0x1b
-  NL = '\n'
-  CR = '\r'
-  BS = '\\'
+  NL = 10.chr
+  CR = 13.chr
+  BS = 92.chr
 
   CHAR_TABLE = [
     '@', '£', '$', '¥', 'è', 'é', 'ù', 'ì',
@@ -55,7 +55,7 @@ module GSMEncoder
   def can_encode? str
     return true if !str
 
-    str.chars.each do |c|
+    str.each_char do |c|
       # a very easy check a-z, A-Z, and 0-9 are always valid
       if c >= ?A && c <= ?Z || c >= ?a && c <= ?z || c >= ?0 && c <= ?9
         next
@@ -84,7 +84,7 @@ module GSMEncoder
     buffer = ''.encode('binary')
 
     begin
-      str.chars.each do |c|
+      str.each_char do |c|
         search = 0
         while search < CHAR_TABLE.length
           if search == EXTENDED_ESCAPE

@@ -31,3 +31,7 @@ __NOTE: ruby >= 1.9.2 is required__
 ### 0.1.1
 
 Added support for Spanish shift
+
+### 0.1.2
+
+Fixed bug when encoding line feed & carriage return

@@ -57,6 +57,11 @@ class GSMEncoderTest < Test::Unit::TestCase
     # found this on a random website
     assert can_encode?("£$¥èéùìòØøÅå_FG????ST?ÆæßÉ")
     assert can_encode?("!\"#¤%&'()*+,-./0123456789:;<=>?¡ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÑÜ§¿abcdefghijklmnopqrstuvwxyzäöñüà^{}\[~]|€")
+
+    # should be able to encode line feed & carriage returns
+    assert can_encode?("this is line one
+this is line two")
+    assert can_encode?("this is line one\rthis is line two")
   end
 
   def test_can_encode_false
