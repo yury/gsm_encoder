@@ -12,6 +12,36 @@ class GSMEncoderTest < Test::Unit::TestCase
     assert_equal '', encode('')
   end
 
+  def test_custom_replacements_for_unsupported_chars
+    assert_equal '      ', encode('привет', " ")
+    assert_equal ' ', encode('`', " ")
+
+    # unsupported Spanish characters
+    assert_equal ' ', encode('ï', " ")
+
+    # unsupported French characters
+    assert_equal ' ',  encode('À', " ")
+    assert_equal '  ', encode('Ââ', " ")
+    assert_equal ' ',  encode('È', " ")
+    assert_equal '  ', encode('Êê', " ")
+    assert_equal '  ', encode('Ëë', " ")
+    assert_equal '  ', encode('Îî', " ")
+    assert_equal '  ', encode('Ïï', " ")
+    assert_equal '  ', encode('Ôô', " ")
+    assert_equal '  ', encode('Œœ', " ")
+    assert_equal ' ',  encode('Ù', " ")
+    assert_equal '  ', encode('Ûû', " ")
+    assert_equal '  ', encode('Ÿÿ', " ")
+
+    # unsupported Czech characters
+    assert_equal '                    ', encode('ČčĎďĚěŇňŘřŠšŤťŮůÝýŽž', " ")
+
+  end
+
+  def test_custom_replacement_using_unsupported_char
+    assert_equal '??????', encode('привет', "ï")
+  end
+
   def test_replacements_for_unsupported_chars
     assert_equal '??????', encode('привет')
     assert_equal '?', encode('`')

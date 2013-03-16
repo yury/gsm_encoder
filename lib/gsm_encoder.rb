@@ -7,6 +7,7 @@
 # alphabet. It also supports the default extension table. The default alphabet
 # and it's extension table is defined in GSM 03.38.
 module GSMEncoder
+  DEFAULT_REPLACE_CHAR = "?"
 
   EXTENDED_ESCAPE = 0x1b
   NL = 10.chr
@@ -78,8 +79,10 @@ module GSMEncoder
     true
   end
 
-  def encode str
+  def encode(str, replace_char=nil)
     return nil if !str
+
+    replace_char = DEFAULT_REPLACE_CHAR if !replace_char || !can_encode?(replace_char)
 
     buffer = ''.encode('binary')
 
@@ -103,7 +106,7 @@ module GSMEncoder
           search += 1
         end
         if search == CHAR_TABLE.length
-          buffer << '?'
+          buffer << replace_char
         end
       end
     rescue
