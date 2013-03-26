@@ -39,7 +39,7 @@ Added support for Spanish shift
 
 Fixed bug when encoding line feed & carriage return
 
-## 0.1.3
+### 0.1.3
 
 Adds the ability to provide the character used when encoding
 unsupported strings
