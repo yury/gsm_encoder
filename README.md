@@ -47,3 +47,7 @@ unsupported strings
 ### 0.1.4
 
 Code cleanup and speedup
+
+### 0.1.5
+
+Even faster. About 4 times. Many thanks to @dlarrabee
