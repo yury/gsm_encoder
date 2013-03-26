@@ -53,17 +53,18 @@ module GSMEncoder
   # @param str The String to verfiy
   # @return True if the charset can represent every character in the Ruby
   #   String, otherwise false.
-  def can_encode? str
+  def can_encode?(str)
     return true if !str
+
+    ord_map = (48..75).to_a + (65..90).to_a + (97..122).to_a
+    search_map = CHAR_TABLE + EXT_CHAR_TABLE.uniq
 
     str.each_char do |c|
       # a very easy check a-z, A-Z, and 0-9 are always valid
-      if c >= ?A && c <= ?Z || c >= ?a && c <= ?z || c >= ?0 && c <= ?9
-        next
-      else
-        return false if EXT_CHAR_TABLE.index(c).nil? && CHAR_TABLE.index(c).nil?
-      end
+      next if ord_map.index(c.ord)
+      return false unless search_map.index(c)
     end
+
     true
   end
 
@@ -76,10 +77,10 @@ module GSMEncoder
 
     begin
       str.each_char do |c|
-        if index = EXT_CHAR_TABLE.index(c)
-          buffer << EXTENDED_ESCAPE
+        if index = CHAR_TABLE.rindex(c)
           buffer << index
-        elsif index = CHAR_TABLE.rindex(c)
+        elsif index = EXT_CHAR_TABLE.index(c)
+          buffer << EXTENDED_ESCAPE
           buffer << index
         else
           buffer << replace_char
