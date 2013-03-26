@@ -7,7 +7,7 @@ require File.expand_path(File.dirname(__FILE__) + '/../lib/gsm_encoder')
 
 
 positive_encode = "!\"#¤%&'()*+,-./0123456789:;<=>?¡ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÑÜ§¿abcdefghijklmnopqrstuvwxyzäöñüà^{}\[~]|€"
-negative_encode = "!\"#¤%&'()*+,-./0123456789:;<=>?¡ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÑÜ§¿abcdefghijklmnopqrstuvwxyzäöñüà^{}\[~]|€" + 'привет'
+negative_encode = positive_encode + 'привет'
 n = 5000
 
 Benchmark.bmbm do |x|
