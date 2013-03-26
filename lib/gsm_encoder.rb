@@ -61,21 +61,9 @@ module GSMEncoder
       if c >= ?A && c <= ?Z || c >= ?a && c <= ?z || c >= ?0 && c <= ?9
         next
       else
-        # search both charmaps (if char is in either, we're good!)
-        found = false
-        j = 0
-        while j < CHAR_TABLE.length
-          if c == CHAR_TABLE[j] || c == EXT_CHAR_TABLE[j]
-            found = true
-            break
-          end
-          j += 1
-        end
-        # if we searched both charmaps and didn't find it, then its bad
-        return false if !found
+        return false if EXT_CHAR_TABLE.index(c).nil? && CHAR_TABLE.index(c).nil?
       end
     end
-
     true
   end
 
@@ -88,24 +76,12 @@ module GSMEncoder
 
     begin
       str.each_char do |c|
-        search = 0
-        while search < CHAR_TABLE.length
-          if search == EXTENDED_ESCAPE
-            search += 1
-            next
-          end
-          if c == CHAR_TABLE[search]
-            buffer << search
-            break
-          end
-          if c == EXT_CHAR_TABLE[search]
-            buffer << EXTENDED_ESCAPE
-            buffer << search
-            break
-          end
-          search += 1
-        end
-        if search == CHAR_TABLE.length
+        if index = EXT_CHAR_TABLE.index(c)
+          buffer << EXTENDED_ESCAPE
+          buffer << index
+        elsif index = CHAR_TABLE.rindex(c)
+          buffer << index
+        else
           buffer << replace_char
         end
       end
