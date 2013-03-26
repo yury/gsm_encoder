@@ -38,7 +38,7 @@ def string_can_encode(str)
   true
 end
 
-Benchmark.bm do |r|
+Benchmark.bmbm do |r|
   N = 200_000
   CHARS_ARRAY = (' '..'_').to_a
   STRING = CHARS_ARRAY.to_a.join('')
