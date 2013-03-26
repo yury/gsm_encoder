@@ -18,7 +18,7 @@ module GSMEncoder
     '@', '£', '$', '¥', 'è', 'é', 'ù', 'ì',
     'ò', 'Ç',  NL, 'Ø', 'ø', CR , 'Å', 'å',
     'Δ', '_', 'Φ', 'Γ', 'Λ', 'Ω', 'Π', 'Ψ',
-    'Σ', 'Θ', 'Ξ', " ", 'Æ', 'æ', 'ß', 'É',
+    'Σ', 'Θ', 'Ξ', " ", 'Æ', 'æ', 'ß', 'É', # 0x1B is actually an escape which we'll encode to a space char
     " ", '!', '"', '#', '¤', '%', '&', "'",
     '(', ')', '*', '+', ',', '-', '.', '/',
     '0', '1', '2', '3', '4', '5', '6', '7',
@@ -31,7 +31,7 @@ module GSMEncoder
     'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
     'p', 'q', 'r', 's', 't', 'u', 'v', 'w',
     'x', 'y', 'z', 'ä', 'ö', 'ñ', 'ü', 'à',
-  ]
+  ].join # make it string to speedup lookup
 
   # Extended character table. Characters in this table are accessed by the
   # 'escape' character in the base table. It is important that none of the
@@ -48,6 +48,8 @@ module GSMEncoder
     0,   0,   0, 0, 0,   'ú', 0, 0, 0,   0,   0, 0, 0,   0,   0,   0,
   ]
 
+  CHARS = CHAR_TABLE + EXT_CHAR_TABLE.select {|c| c != 0}.join
+
   # Verifies that this charset can represent every character in the Ruby
   # String.
   # @param str The String to verfiy
@@ -57,11 +59,10 @@ module GSMEncoder
     return true if !str
 
     str.each_char do |c|
-      # a very easy check a-z, A-Z, and 0-9 are always valid
-      if c >= ?A && c <= ?Z || c >= ?a && c <= ?z || c >= ?0 && c <= ?9
-        next
-      else
-        return false if EXT_CHAR_TABLE.index(c).nil? && CHAR_TABLE.index(c).nil?
+      # simple range checks for most common characters (' '..'_') or ('a'..'~')
+      b = c.getbyte(0)
+      unless b >= 0x20 && b <= 0x5F || b >= 0x61 && b <= 0x7E || CHARS.index(c)
+        return false
       end
     end
     true

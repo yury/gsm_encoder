@@ -1,0 +1,62 @@
+require 'benchmark'
+
+def byte_can_encode(str)
+  str.each_char do |c|
+    # simple range checks for most common characters (' '..'_') or ('a'..'~')
+    b = c.getbyte(0)
+    unless b >= 0x20 && b <= 0x5F || b >= 0x61 && b <= 0x7E
+      return false
+    end
+  end
+  true
+end
+
+def string_can_encode(str)
+  str.each_char do |c|
+    # simple range checks for most common characters (' '..'_') or ('a'..'~')
+    unless c >= ' ' && c <= '_' || c >= 'a' && c <= '~'
+      return false
+    end
+  end
+  true
+end
+
+Benchmark.bm do |r|
+  N = 200_000
+  CHARS_ARRAY = (' '..'_').to_a
+  STRING = CHARS_ARRAY.to_a.join('')
+  POSITIVE = STRING
+  NEGATIVE = POSITIVE + 'привет'
+
+  r.report("string positive") do
+    N.times { string_can_encode(POSITIVE)}
+  end
+
+  r.report("byte   positive") do    
+    N.times { byte_can_encode(POSITIVE) }
+  end
+
+  r.report("string negative") do
+    N.times { string_can_encode(NEGATIVE)}
+  end
+
+  r.report("byte   negative") do    
+    N.times { byte_can_encode(NEGATIVE) }
+  end
+
+  r.report("string include?") do    
+    N.times { STRING.include?('A') }
+  end
+
+  r.report("string index   ") do    
+    N.times { STRING.index('A') }
+  end
+
+  r.report("array  include?") do    
+    N.times { CHARS_ARRAY.include?('A') }
+  end
+
+  r.report("array  index   ") do    
+    N.times { CHARS_ARRAY.index('A') }
+  end
+end
