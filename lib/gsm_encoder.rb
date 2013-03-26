@@ -55,13 +55,13 @@ module GSMEncoder
   # @param str The String to verfiy
   # @return True if the charset can represent every character in the Ruby
   #   String, otherwise false.
-  def can_encode? str
+  def can_encode?(str)
     return true if !str
 
     str.each_char do |c|
       # simple range checks for most common characters (' '..'_') or ('a'..'~')
       b = c.getbyte(0)
-      unless b >= 0x20 && b <= 0x5F || b >= 0x61 && b <= 0x7E || CHARS.index(c)
+      unless b >= 0x20 && b <= 0x5F || b >= 0x61 && b <= 0x7E || CHARS.include?(c)
         return false
       end
     end
