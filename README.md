@@ -43,3 +43,7 @@ Fixed bug when encoding line feed & carriage return
 
 Adds the ability to provide the character used when encoding
 unsupported strings
+
+### 0.1.4
+
+Code cleanup and speedup
