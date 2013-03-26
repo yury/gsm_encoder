@@ -1,4 +1,9 @@
+#!/usr/bin/env ruby
+#encoding: utf-8
+
 require 'benchmark'
+
+require File.expand_path(File.dirname(__FILE__) + '/../lib/gsm_encoder')
 
 def byte_can_encode(str)
   str.each_char do |c|
@@ -10,6 +15,18 @@ def byte_can_encode(str)
   end
   true
 end
+
+def ord_can_encode(str)
+  str.each_char do |c|
+    # simple range checks for most common characters (' '..'_') or ('a'..'~')
+    o = c.ord
+    unless o >= 0x20 && o <= 0x5F || o >= 0x61 && o <= 0x7E
+      return false
+    end
+  end
+  true
+end
+
 
 def string_can_encode(str)
   str.each_char do |c|
@@ -36,12 +53,16 @@ Benchmark.bm do |r|
     N.times { byte_can_encode(POSITIVE) }
   end
 
+  r.report("ord    positive") do
+    N.times { ord_can_encode(POSITIVE) }
+  end
+
   r.report("string negative") do
     N.times { string_can_encode(NEGATIVE)}
   end
 
-  r.report("byte   negative") do    
-    N.times { byte_can_encode(NEGATIVE) }
+  r.report("ord    negative") do
+    N.times { ord_can_encode(NEGATIVE) }
   end
 
   r.report("string include?") do    
