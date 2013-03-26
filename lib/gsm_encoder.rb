@@ -77,10 +77,10 @@ module GSMEncoder
 
     begin
       str.each_char do |c|
-        if index = EXT_CHAR_TABLE.index(c)
-          buffer << EXTENDED_ESCAPE
+        if index = CHAR_TABLE.rindex(c)
           buffer << index
-        elsif index = CHAR_TABLE.rindex(c)
+        elsif index = EXT_CHAR_TABLE.index(c)
+          buffer << EXTENDED_ESCAPE
           buffer << index
         else
           buffer << replace_char
