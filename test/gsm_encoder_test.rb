@@ -85,8 +85,8 @@ class GSMEncoderTest < Test::Unit::TestCase
     assert can_encode?("Á á É é Í í Ó ó Ú ú")
 
     # found this on a random website
-    assert can_encode?("£$¥èéùìòØøÅå_FG????ST?ÆæßÉ")
-    assert can_encode?("!\"#¤%&'()*+,-./0123456789:;<=>?¡ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÑÜ§¿abcdefghijklmnopqrstuvwxyzäöñüà^{}\[~]|€")
+    assert can_encode?(" £$¥èéùìòØøÅå_FG????ST?ÆæßÉ")
+    assert can_encode?(" !\"#¤%&'()*+,-./0123456789:;<=>?¡ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÑÜ§¿abcdefghijklmnopqrstuvwxyzäöñüà^{}\[~]|€")
 
     # should be able to encode line feed & carriage returns
     assert can_encode?("this is line one
@@ -97,6 +97,7 @@ this is line two")
   def test_can_encode_false
     assert !can_encode?("`")
     assert !can_encode?("вот так вот")
+    assert !can_encode?("\t hello")
 
     # non-allowed Spanish characters
     assert !can_encode?("ï")

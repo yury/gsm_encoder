@@ -6,9 +6,9 @@ require 'benchmark'
 require File.expand_path(File.dirname(__FILE__) + '/../lib/gsm_encoder')
 
 
-positive_encode = "!\"#¤%&'()*+,-./0123456789:;<=>?¡ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÑÜ§¿abcdefghijklmnopqrstuvwxyzäöñüà^{}\[~]|€"
+positive_encode = " !\"#¤%&'()*+,-./0123456789:;<=>?¡ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÑÜ§¿abcdefghijklmnopqrstuvwxyzäöñüà^{}\[~]|€"
 negative_encode = positive_encode + 'привет'
-n = 5000
+n = 5_000
 
 Benchmark.bmbm do |x|
   x.report("positive encode:") { n.times  { GSMEncoder.encode(positive_encode) } }

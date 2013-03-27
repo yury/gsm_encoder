@@ -48,7 +48,7 @@ module GSMEncoder
     0,   0,   0, 0, 0,   'ú', 0, 0, 0,   0,   0, 0, 0,   0,   0,   0,
   ]
 
-  CHARS = CHAR_TABLE + EXT_CHAR_TABLE.select {|c| c != 0}.join
+  REGEX = /\A[ -_a-~#{Regexp.escape(CHAR_TABLE + EXT_CHAR_TABLE.select {|c| c != 0}.join)}]*\Z/
 
   # Verifies that this charset can represent every character in the Ruby
   # String.
@@ -56,16 +56,7 @@ module GSMEncoder
   # @return True if the charset can represent every character in the Ruby
   #   String, otherwise false.
   def can_encode?(str)
-    return true if !str
-
-    str.each_char do |c|
-      # simple range checks for most common characters (' '..'_') or ('a'..'~')
-      b = c.getbyte(0)
-      unless b >= 0x20 && b <= 0x5F || b >= 0x61 && b <= 0x7E || CHARS.include?(c)
-        return false
-      end
-    end
-    true
+    !str || !!(REGEX =~ str)
   end
 
   def encode(str, replace_char=nil)
