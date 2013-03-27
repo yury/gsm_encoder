@@ -8,7 +8,7 @@ Gem::Specification.new do |s|
   s.platform    = Gem::Platform::RUBY
   s.authors     = ["Yury Korolev", "Jeff Webb"]
   s.email       = ["yury.korolev@gmail.com", "jeff@boowebb.com"]
-  s.homepage    = "http://github.com/boowebb/gsm_encoder"
+  s.homepage    = "http://github.com/yury/gsm_encoder"
   s.summary     = "ruby GSM 03.38 encoder/decoder"
   s.description = "GSMEncoder encodes and decodes Ruby Strings to and from the SMS default alphabet. It also supports the default extension table. The default alphabet and it's extension table is defined in GSM 03.38"
 
