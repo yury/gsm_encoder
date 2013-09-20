@@ -31,6 +31,8 @@ module GSMEncoder
     'p', 'q', 'r', 's', 't', 'u', 'v', 'w',
     'x', 'y', 'z', 'ä', 'ö', 'ñ', 'ü', 'à',
   ]
+  # Reverse lookup for the char table
+  CHAR_TABLE_HASH = Hash[CHAR_TABLE.map.with_index.to_a]
 
   # Extended character table. Characters in this table are accessed by the
   # 'escape' character in the base table. It is important that none of the
@@ -46,6 +48,8 @@ module GSMEncoder
     0,   'á', 0, 0, 0,   '€', 0, 0, 0,   'í', 0, 0, 0,   0,   0,   'ó',
     0,   0,   0, 0, 0,   'ú', 0, 0, 0,   0,   0, 0, 0,   0,   0,   0,
   ]
+  # Reverse lookup for the extended char table
+  EXT_CHAR_TABLE_HASH = Hash[EXT_CHAR_TABLE.map.with_index.to_a]
 
   # Verifies that this charset can represent every character in the Ruby
   # String.
@@ -85,24 +89,12 @@ module GSMEncoder
 
     begin
       str.each_char do |c|
-        search = 0
-        while search < CHAR_TABLE.length
-          if search == EXTENDED_ESCAPE
-            search += 1
-            next
-          end
-          if c == CHAR_TABLE[search]
-            buffer << search
-            break
-          end
-          if c == EXT_CHAR_TABLE[search]
-            buffer << EXTENDED_ESCAPE
-            buffer << search
-            break
-          end
-          search += 1
-        end
-        if search == CHAR_TABLE.length
+        if CHAR_TABLE.include?(c)
+          buffer << CHAR_TABLE_HASH[c]
+        elsif EXT_CHAR_TABLE.include?(c)
+          buffer << EXTENDED_ESCAPE
+          buffer << EXT_CHAR_TABLE_HASH[c]
+        else
           buffer << '?'
         end
       end
