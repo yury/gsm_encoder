@@ -1,4 +1,6 @@
-#encoding: utf-8
+# frozen_string_literal: true
+# encoding: utf-8
+
 # Stealing from Twitter's Java implementation
 # https://github.com/twitter/cloudhopper-commons-charset/blob/master/src/main/java/com/cloudhopper/commons/charset/GSMCharset.java
 
@@ -7,7 +9,10 @@
 # alphabet. It also supports the default extension table. The default alphabet
 # and it's extension table is defined in GSM 03.38.
 module GSMEncoder
-  DEFAULT_REPLACE_CHAR = "?"
+  BASIC_CHARSET = :basic
+  SPANISH_CHARSET = :spanish
+
+  DEFAULT_REPLACE_CHAR = '?'
 
   EXTENDED_ESCAPE = 0x1b
   NL = 10.chr
@@ -37,7 +42,17 @@ module GSMEncoder
   # 'escape' character in the base table. It is important that none of the
   # 'inactive' characters ever be matchable with a valid base-table
   # character as this breaks the encoding loop.
-  EXT_CHAR_TABLE = [
+  BASIC_EXT_CHAR_TABLE = [
+    0,   0,   0, 0, 0,   0,   0, 0, 0,   0,   0, 0, 0,   0,   0,   0,
+    0,   0,   0, 0, '^', 0,   0, 0, 0,   0,   0, 0, 0,   0,   0,   0,
+    0,   0,   0, 0, 0,   0,   0, 0, '{', '}', 0, 0, 0,   0,   0,   BS,
+    0,   0,   0, 0, 0,   0,   0, 0, 0,   0,   0, 0, '[', '~', ']', 0,
+    '|', 0,   0, 0, 0,   0,   0, 0, 0,   0,   0, 0, 0,   0,   0,   0,
+    0,   0,   0, 0, 0,   0,   0, 0, 0,   0,   0, 0, 0,   0,   0,   0,
+    0,   0,   0, 0, 0,   '€', 0, 0, 0,   0,   0, 0, 0,   0,   0,   0,
+    0,   0,   0, 0, 0,   0,   0, 0, 0,   0,   0, 0, 0,   0,   0,   0,
+  ]
+  SPANISH_EXT_CHAR_TABLE = [
     0,   0,   0, 0, 0,   0,   0, 0, 0,   'ç', 0, 0, 0,   0,   0,   0,
     0,   0,   0, 0, '^', 0,   0, 0, 0,   0,   0, 0, 0,   0,   0,   0,
     0,   0,   0, 0, 0,   0,   0, 0, '{', '}', 0, 0, 0,   0,   0,   BS,
@@ -48,21 +63,21 @@ module GSMEncoder
     0,   0,   0, 0, 0,   'ú', 0, 0, 0,   0,   0, 0, 0,   0,   0,   0,
   ]
 
-  REGEX = /\A[ -_a-~#{Regexp.escape(CHAR_TABLE + EXT_CHAR_TABLE.select {|c| c != 0}.join)}]*\Z/
+  BASIC_REGEX = /\A[ -_a-~#{Regexp.escape(CHAR_TABLE + BASIC_EXT_CHAR_TABLE.select {|c| c != 0}.join)}]*\Z/
+  SPANISH_REGEX = /\A[ -_a-~#{Regexp.escape(CHAR_TABLE + SPANISH_EXT_CHAR_TABLE.select {|c| c != 0}.join)}]*\Z/
 
   # Verifies that this charset can represent every character in the Ruby
   # String.
   # @param str The String to verfiy
   # @return True if the charset can represent every character in the Ruby
   #   String, otherwise false.
-  def can_encode?(str)
-    !str || !!(REGEX =~ str)
+  def can_encode?(str, charset: BASIC_CHARSET)
+    !str || !!(regex(charset) =~ str)
   end
 
-  def encode(str, replace_char=nil)
-    return nil if !str
-
-    replace_char = DEFAULT_REPLACE_CHAR if !replace_char || !can_encode?(replace_char)
+  def encode(str, replace_char: DEFAULT_REPLACE_CHAR, charset: BASIC_CHARSET)
+    return nil unless str
+    replace_char = DEFAULT_REPLACE_CHAR unless replace_char && can_encode?(replace_char, charset: charset)
 
     buffer = ''.encode('binary')
 
@@ -70,7 +85,7 @@ module GSMEncoder
       str.each_char do |c|
         if index = CHAR_TABLE.rindex(c)
           buffer << index
-        elsif index = EXT_CHAR_TABLE.index(c)
+        elsif index = ext_char_table(charset).index(c)
           buffer << EXTENDED_ESCAPE
           buffer << index
         else
@@ -83,8 +98,8 @@ module GSMEncoder
     buffer
   end
 
-  def decode bstring
-    return nil if !bstring
+  def decode(bstring, charset: BASIC_CHARSET)
+    return nil unless bstring
 
     buffer = ''.encode('utf-8')
 
@@ -93,7 +108,7 @@ module GSMEncoder
       code = c & 0x000000ff
       if code == EXTENDED_ESCAPE
         # take next char from extension table
-        table = EXT_CHAR_TABLE
+        table = ext_char_table(charset)
       else
         buffer << (code >= table.length ? '?' : table[code])
         # go back to the default table
@@ -107,4 +122,19 @@ module GSMEncoder
   module_function :encode
   module_function :decode
 
+private
+
+  def regex(charset)
+    case charset
+    when SPANISH_CHARSET then SPANISH_REGEX
+    else BASIC_CHARSET
+    end
+  end
+
+  def ext_char_table(charset)
+    case charset
+    when SPANISH_CHARSET then SPANISH_EXT_CHAR_TABLE
+    else BASIC_EXT_CHAR_TABLE
+    end
+  end
 end
