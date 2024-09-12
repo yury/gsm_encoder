@@ -5,10 +5,11 @@ require 'benchmark'
 
 require File.expand_path(File.dirname(__FILE__) + '/../lib/gsm_encoder')
 
-
 positive_encode = " !\"#¤%&'()*+,-./0123456789:;<=>?¡ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÑÜ§¿abcdefghijklmnopqrstuvwxyzäöñüà^{}\[~]|€"
 negative_encode = positive_encode + 'привет'
 common_message = "this is a common phrase using just letters and numbers like 57 and 38"
+encoded = GSMEncoder.encode(positive_encode)
+
 n = 5_000
 
 Benchmark.bmbm do |x|
@@ -20,4 +21,6 @@ Benchmark.bmbm do |x|
 
   x.report("common encode:") { n.times { GSMEncoder.encode(common_message) } }
   x.report("common can_encode?:") { n.times { GSMEncoder.can_encode?(common_message) } }
+
+  x.report("positive decode:") { n.times  { GSMEncoder.decode(encoded) } }
 end
