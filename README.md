@@ -51,3 +51,7 @@ Code cleanup and speedup
 ### 0.1.5
 
 Even faster. About 4 times. Many thanks to @dlarrabee
+
+### 0.1.7
+
+Even faster! Many thanks to @ThomasSevestre
