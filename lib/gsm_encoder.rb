@@ -1,4 +1,4 @@
-#encoding: utf-8
+# frozen_string_literal: true
 # Stealing from Twitter's Java implementation
 # https://github.com/twitter/cloudhopper-commons-charset/blob/master/src/main/java/com/cloudhopper/commons/charset/GSMCharset.java
 
@@ -7,18 +7,18 @@
 # alphabet. It also supports the default extension table. The default alphabet
 # and it's extension table is defined in GSM 03.38.
 module GSMEncoder
-  DEFAULT_REPLACE_CHAR = "?"
+  # GSM to UTF8 tables
+  nl = 10.chr
+  cr = 13.chr
+  bs = 92.chr
 
-  EXTENDED_ESCAPE = 0x1b
-  NL = 10.chr
-  CR = 13.chr
-  BS = 92.chr
+  GSM_ESCAPE = 0x1b
 
-  CHAR_TABLE = [
+  GSM_TABLE = [
     '@', '£', '$', '¥', 'è', 'é', 'ù', 'ì',
-    'ò', 'Ç',  NL, 'Ø', 'ø', CR , 'Å', 'å',
+    'ò', 'Ç',  nl, 'Ø', 'ø', cr , 'Å', 'å',
     'Δ', '_', 'Φ', 'Γ', 'Λ', 'Ω', 'Π', 'Ψ',
-    'Σ', 'Θ', 'Ξ', " ", 'Æ', 'æ', 'ß', 'É', # 0x1B is actually an escape which we'll encode to a space char
+    'Σ', 'Θ', 'Ξ', nil, 'Æ', 'æ', 'ß', 'É', # 0x1b is the escape
     " ", '!', '"', '#', '¤', '%', '&', "'",
     '(', ')', '*', '+', ',', '-', '.', '/',
     '0', '1', '2', '3', '4', '5', '6', '7',
@@ -31,73 +31,86 @@ module GSMEncoder
     'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
     'p', 'q', 'r', 's', 't', 'u', 'v', 'w',
     'x', 'y', 'z', 'ä', 'ö', 'ñ', 'ü', 'à',
-  ].join # make it string to speedup lookup
+  ].freeze
 
-  # Extended character table. Characters in this table are accessed by the
-  # 'escape' character in the base table. It is important that none of the
-  # 'inactive' characters ever be matchable with a valid base-table
-  # character as this breaks the encoding loop.
-  EXT_CHAR_TABLE = [
-    0,   0,   0, 0, 0,   0,   0, 0, 0,   'ç', 0, 0, 0,   0,   0,   0,
-    0,   0,   0, 0, '^', 0,   0, 0, 0,   0,   0, 0, 0,   0,   0,   0,
-    0,   0,   0, 0, 0,   0,   0, 0, '{', '}', 0, 0, 0,   0,   0,   BS,
-    0,   0,   0, 0, 0,   0,   0, 0, 0,   0,   0, 0, '[', '~', ']', 0,
-    '|', 'Á', 0, 0, 0,   0,   0, 0, 0,   'Í', 0, 0, 0,   0,   0,   'Ó',
-    0,   0,   0, 0, 0,   'Ú', 0, 0, 0,   0,   0, 0, 0,   0,   0,   0,
-    0,   'á', 0, 0, 0,   '€', 0, 0, 0,   'í', 0, 0, 0,   0,   0,   'ó',
-    0,   0,   0, 0, 0,   'ú', 0, 0, 0,   0,   0, 0, 0,   0,   0,   0,
-  ]
+  GSM_EXT_TABLE = [
+    nil, nil, nil, nil, nil, nil, nil, nil, nil, 'ç', nil, nil, nil, nil, nil, nil,
+    nil, nil, nil, nil, '^', nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
+    nil, nil, nil, nil, nil, nil, nil, nil, '{', '}', nil, nil, nil, nil, nil, bs,
+    nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, '[', '~', ']', nil,
+    '|', 'Á', nil, nil, nil, nil, nil, nil, nil, 'Í', nil, nil, nil, nil, nil, 'Ó',
+    nil, nil, nil, nil, nil, 'Ú', nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
+    nil, 'á', nil, nil, nil, '€', nil, nil, nil, 'í', nil, nil, nil, nil, nil, 'ó',
+    nil, nil, nil, nil, nil, 'ú', nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
+  ].freeze
 
-  REGEX = /\A[ -_a-~#{Regexp.escape(CHAR_TABLE + EXT_CHAR_TABLE.select {|c| c != 0}.join)}]*\Z/
+  # build UTF8 to GSM tables
+  UTF8_ARRAY_SIZE = 128
+  UTF8_ARRAY = []
+  UTF8_HASH = {}
+  [
+    [ GSM_TABLE, nil ],
+    [ GSM_EXT_TABLE, GSM_ESCAPE ]
+  ].each do |table, prefix|
+    table.each.with_index do |char, index|
+      next if char.nil?
+      # build GSM value
+      if prefix
+        value = +''.encode('binary')
+        value << prefix
+        value << index
+      else
+        value = index
+      end
+      # store GSM value
+      key = char.codepoints.first
+      if key < UTF8_ARRAY_SIZE
+        UTF8_ARRAY[key] = value
+      else
+        UTF8_HASH[key] = value
+      end
+    end
+  end
+  UTF8_ARRAY.freeze
+  UTF8_ARRAY.each(&:freeze)
+  UTF8_HASH.freeze
+  UTF8_HASH.each_value(&:freeze)
 
-  # Verifies that this charset can represent every character in the Ruby
-  # String.
-  # @param str The String to verfiy
-  # @return True if the charset can represent every character in the Ruby
-  #   String, otherwise false.
+  REGEXP = /\A[#{Regexp.escape((GSM_TABLE + GSM_EXT_TABLE).compact.join)}]*\Z/
+
+  # Verifies that the given string can be encoded in GSM 03.38
   def can_encode?(str)
-    !str || !!(REGEX =~ str)
+    !str || !!(REGEXP =~ str)
   end
 
-  def encode(str, replace_char=nil)
-    return nil if !str
-
-    replace_char = DEFAULT_REPLACE_CHAR if !replace_char || !can_encode?(replace_char)
-
-    buffer = ''.encode('binary')
-
-    begin
-      str.each_char do |c|
-        if index = CHAR_TABLE.rindex(c)
-          buffer << index
-        elsif index = EXT_CHAR_TABLE.index(c)
-          buffer << EXTENDED_ESCAPE
-          buffer << index
-        else
-          buffer << replace_char
-        end
+  # Encode given UTF-8 string to GSM 03.38
+  def encode(string, replacement = "?")
+    return nil if string.nil?
+    replacement = replacement == "?" ? 63 : encode(replacement)
+    buffer = String.new(encoding: "binary")
+    string.each_codepoint do |codepoint|
+      if codepoint < UTF8_ARRAY_SIZE
+        buffer << (UTF8_ARRAY[codepoint] || replacement)
+      else
+        buffer << (UTF8_HASH[codepoint] || replacement)
       end
-    rescue
-      # TODO: ?
     end
     buffer
   end
 
-  def decode bstring
-    return nil if !bstring
-
-    buffer = ''.encode('utf-8')
-
-    table = CHAR_TABLE
-    bstring.bytes.each do |c|
-      code = c & 0x000000ff
-      if code == EXTENDED_ESCAPE
-        # take next char from extension table
-        table = EXT_CHAR_TABLE
+  # Encode given GSM 03.38 string to UTF-8
+  def decode(string, replacement = "?")
+    return nil if string.nil?
+    buffer = +""
+    escaped = false
+    string.each_byte do |c|
+      if c == GSM_ESCAPE
+        escaped = true
+      elsif escaped
+        buffer << GSM_EXT_TABLE[c] || replacement
+        escaped = false
       else
-        buffer << (code >= table.length ? '?' : table[code])
-        # go back to the default table
-        table = CHAR_TABLE
+        buffer << GSM_TABLE[c] || replacement
       end
     end
     buffer
