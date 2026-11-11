@@ -29,7 +29,42 @@ __NOTE: ruby >= 1.9.2 is required__
     # replaces unsupported chars with a provided value ' '
     GSMEncoder.encode('`', ' ') # => ' '
 
+## Extension tables
+
+Characters like `{ } [ ] ~ \ | € ^` are sent as an escape plus a code from an
+extension table. Two tables are built in:
+
+- `:spanish` (the default) - the Spanish national language single shift table.
+  It adds `ç Á Í Ó Ú á í ó ú` on top of the standard table.
+- `:standard` - the GSM 03.38 default extension table.
+
+The Spanish characters are only valid GSM 7-bit when the message header selects
+the Spanish shift table. Most SMS providers (Twilio, Telnyx, Plivo, ...) don't,
+so a message containing them is sent as UCS-2 instead. That cuts a segment from
+160 characters to 70. Use `:standard` if you rely on `can_encode?` or
+`encode` to keep messages in GSM 7-bit:
+
+    # for every call
+    GSMEncoder.extension_table = :standard
+
+    # or for one call
+    GSMEncoder.can_encode?('á', extension_table: :standard) # => false
+    GSMEncoder.encode('á', extension_table: :standard) # => '?'
+    GSMEncoder.decode(bytes, extension_table: :standard)
+
+You can also register your own table, an Array indexed by GSM code with `nil`
+for unused codes:
+
+    GSMEncoder.register_extension_table(:mine, table)
+    GSMEncoder.extension_table = :mine
+
 ## Updates
+
+### Unreleased
+
+- Configurable extension table (`:standard` or `:spanish`), defaults to `:spanish`
+- Adds form feed to the extension tables
+- `decode` returns the replacement for unknown codes instead of raising `TypeError`
 
 ### 0.1.1
 

@@ -127,4 +127,75 @@ this is line two")
     end
   end
 
+  def test_form_feed
+    assert can_encode?("\f")
+    assert_equal "\e\n".b, encode("\f")
+    assert_equal "\f", decode(encode("\f"))
+  end
+
+  def test_decode_unknown_extension_character
+    # an escape followed by a code that isn't in the extension table
+    assert_equal "a?b", decode("a\e.b".b)
+    assert_equal "a b", decode("a\e.b".b, " ")
+    assert_equal "a?", decode("a\e\x7f".b)
+  end
+
+  def test_decode_unknown_character
+    assert_equal "a?", decode("a\xff".b)
+  end
+
+  def test_default_extension_table_is_spanish
+    assert_equal :spanish, GSMEncoder.extension_table
+    assert_equal [:standard, :spanish], GSMEncoder.extension_tables.first(2)
+  end
+
+  def test_standard_extension_table
+    spanish_only = "çÁÍÓÚáíóú"
+
+    assert !can_encode?(spanish_only, extension_table: :standard)
+    spanish_only.each_char do |char|
+      assert !can_encode?(char, extension_table: :standard), "#{char} should not be encodable"
+      assert_equal "?", encode(char, extension_table: :standard)
+      assert_equal "", encode(char, "", extension_table: :standard)
+    end
+
+    standard = "^{}\\[~]|€\f" + GSMEncoder::GSM_TABLE.compact.join
+    assert can_encode?(standard, extension_table: :standard)
+    assert_equal standard, decode(encode(standard, extension_table: :standard), extension_table: :standard)
+
+    # a Spanish shift code is unknown in the standard table
+    assert_equal "?", decode(encode("á"), extension_table: :standard)
+  end
+
+  def test_configure_extension_table
+    GSMEncoder.extension_table = :standard
+    assert !can_encode?("á")
+    assert_equal "?", encode("á")
+    assert_equal "€", decode(encode("€"))
+
+    # a per call table wins over the configured one
+    assert can_encode?("á", extension_table: :spanish)
+  ensure
+    GSMEncoder.extension_table = :spanish
+  end
+
+  def test_unknown_extension_table
+    assert_raise(ArgumentError) { GSMEncoder.extension_table = :klingon }
+    assert_raise(ArgumentError) { encode("a", extension_table: :klingon) }
+    assert_equal :spanish, GSMEncoder.extension_table
+  end
+
+  def test_register_extension_table
+    table = GSMEncoder::STANDARD_EXT_TABLE.dup
+    table[0x41] = "Á"
+    GSMEncoder.register_extension_table(:custom, table)
+
+    assert can_encode?("Á{", extension_table: :custom)
+    assert !can_encode?("á", extension_table: :custom)
+    assert_equal "\eA".b, encode("Á", extension_table: :custom)
+    assert_equal "Á", decode("\eA".b, extension_table: :custom)
+
+    assert_raise(ArgumentError) { GSMEncoder.register_extension_table(:bad, "nope") }
+  end
+
 end
