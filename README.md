@@ -60,12 +60,6 @@ for unused codes:
 
 ## Updates
 
-### Unreleased
-
-- Configurable extension table (`:standard` or `:spanish`), defaults to `:spanish`
-- Adds form feed to the extension tables
-- `decode` returns the replacement for unknown codes instead of raising `TypeError`
-
 ### 0.1.1
 
 Added support for Spanish shift
@@ -90,3 +84,10 @@ Even faster. About 4 times. Many thanks to @dlarrabee
 ### 0.1.7
 
 Even faster! Many thanks to @ThomasSevestre
+
+### 0.1.8
+
+- Configurable extension table (`:standard` or `:spanish`), defaults to `:spanish`
+- Adds form feed to the extension tables
+- `decode` returns the replacement for unknown codes instead of raising `TypeError`
+
